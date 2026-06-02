@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Freelance Platform - Offers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-success" th:href="@{/view/offers}">FreelancePlatform</a>
+
+        <div class="d-flex align-items-center">
+            <div th:if="${currentUsername == null}">
+                <a th:href="@{/view/login}" class="btn btn-outline-light me-2">Вход</a>
+                <a th:href="@{/view/register}" class="btn btn-primary">Регистрация</a>
+            </div>
+
+            <div th:if="${currentUsername != null}" class="d-flex align-items-center">
+                <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                   th:href="@{/view/admin/panel}"
+                   class="btn btn-sm btn-danger me-3 fw-bold">
+                    🛡️ Админ Панел
+                </a>
+
+                <a th:href="@{/view/offers/my-offers}" class="btn btn-sm btn-warning me-3 fw-bold">
+                    💼 Моите Обяви
+                </a>
+
+                <a th:href="@{/view/profile}" class="btn btn-sm btn-outline-info me-3">Моят Профил</a>
+                <span class="text-white me-3">
+                    Добре дошъл, <strong class="text-info" th:text="${currentUsername}">Потребител</strong>!
+                </span>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger fw-bold">Изход</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form th:action="@{/view/offers}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="title" class="form-label fw-bold">Търсене по заглавие</label>
+                    <input type="text" id="title" name="title" th:value="${titleSearch}" class="form-control" placeholder="Напр. Разработка на сайт...">
+                </div>
+                <div class="col-md-3">
+                    <label for="maxPrice" class="form-label fw-bold">Максимален бюджет (лв.)</label>
+                    <input type="number" id="maxPrice" name="maxPrice" th:value="${maxPriceSearch}" class="form-control" placeholder="Напр. 500">
+                </div>
+                <div class="col-md-3">
+                    <label for="sortBy" class="form-label fw-bold">Сортиране по</label>
+                    <select id="sortBy" name="sortBy" class="form-select">
+                        <option value="id" th:selected="${currentSort == 'id'}">Най-нови</option>
+                        <option value="price" th:selected="${currentSort == 'price'}">Бюджет</option>
+                        <option value="title" th:selected="${currentSort == 'title'}">Азбучен ред</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-success">Търси</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Всички налични обяви</h2>
+        <a th:href="@{/view/offers/create}" class="btn btn-primary shadow-sm">+ Създай обява</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4" th:each="offer : ${offers}">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary fw-bold" th:text="${offer.title}">Заглавие</h5>
+                    <h6 class="card-subtitle mb-3 text-muted">
+                        Бюджет: <span class="fw-bold text-success" th:text="|${offer.price} лв.|">100 лв.</span>
+                    </h6>
+                    <p class="card-text text-truncate" th:text="${offer.description}">Описание на проекта...</p>
+                </div>
+                <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Автор:
+                        <a th:href="@{/view/users/{username}(username=${offer.author.username})}"
+                           class="fw-bold text-decoration-none text-success"
+                           th:text="${offer.author.username}">потребител</a>
+                    </small>
+                    <a th:href="@{/view/offers/{id}(id=${offer.id})}" class="btn btn-sm btn-outline-primary">Преглед</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info text-center shadow-sm" th:if="${#lists.isEmpty(offers)}">
+        В момента няма налични оферти, отговарящи на тези критерии.
+    </div>
+
+    <nav aria-label="Page navigation" class="mt-4" th:if="${totalPages > 1}">
+        <ul class="pagination justify-content-center">
+
+            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{/view/offers(title=${titleSearch}, maxPrice=${maxPriceSearch}, page=${currentPage - 1}, sortBy=${currentSort})}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo; Предишна</span>
+                </a>
+            </li>
+
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+                <a class="page-link" th:text="${i + 1}" th:href="@{/view/offers(title=${titleSearch}, maxPrice=${maxPriceSearch}, page=${i}, sortBy=${currentSort})}">1</a>
+            </li>
+
+            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                <a class="page-link" th:href="@{/view/offers(title=${titleSearch}, maxPrice=${maxPriceSearch}, page=${currentPage + 1}, sortBy=${currentSort})}" aria-label="Next">
+                    <span aria-hidden="true">Следваща &raquo;</span>
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

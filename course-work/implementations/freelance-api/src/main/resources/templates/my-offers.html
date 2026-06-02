@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <title>Freelance Platform - Моите обяви</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-success" th:href="@{/view/offers}">FreelancePlatform</a>
+
+    <div class="d-flex align-items-center">
+      <div class="d-flex align-items-center">
+        <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+           th:href="@{/view/admin/panel}"
+           class="btn btn-sm btn-danger me-3 fw-bold">
+          🛡️ Админ Панел
+        </a>
+
+        <a th:href="@{/view/offers/my-offers}" class="btn btn-sm btn-warning me-3 fw-bold">
+          💼 Моите Обяви
+        </a>
+
+        <a th:href="@{/view/profile}" class="btn btn-sm btn-outline-info me-3">Моят Профил</a>
+
+        <span class="text-white me-3">
+            Добре дошъл, <strong class="text-info" th:text="${currentUsername}">Потребител</strong>!
+        </span>
+        <form th:action="@{/logout}" method="post" class="d-inline">
+          <button type="submit" class="btn btn-sm btn-danger fw-bold">Изход</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Лични обяви</h2>
+    <a th:href="@{/view/offers}" class="btn btn-secondary">← Към каталога</a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div th:if="${myOffers.isEmpty()}" class="text-center py-4">
+        <p class="text-muted">Все още нямате публикувани обяви.</p>
+        <a th:href="@{/view/offers/create}" class="btn btn-primary btn-sm">Създай първата си обява</a>
+      </div>
+
+      <table th:if="${!myOffers.isEmpty()}" class="table table-hover align-middle">
+        <thead class="table-dark">
+        <tr>
+          <th>Заглавие</th>
+          <th>Цена</th>
+          <th>Дата на създаване</th>
+          <th class="text-end">Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="offer : ${myOffers.content}">
+          <td th:text="${offer.title}" class="fw-bold">Заглавие</td>
+          <td th:text="|${offer.price} лв.|">0.00 лв.</td>
+          <td th:text="${#temporals.format(offer.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2026</td>
+          <td class="text-end">
+            <a th:href="@{'/view/offers/edit/' + ${offer.id}}" class="btn btn-warning btn-sm me-2">
+              ✏️ Редактирай
+            </a>
+
+            <form th:action="@{'/view/offers/delete/' + ${offer.id}}" method="POST" class="d-inline"
+                  onsubmit="return confirm('Сигурни ли сте, че искате да изтриете тази обява?');">
+              <button type="submit" class="btn btn-danger btn-sm">🗑️ Изтрий</button>
+            </form>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div th:if="${myOffers.totalPages > 1}" class="d-flex justify-content-center mt-4">
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+        <li class="page-item" th:classappend="${myOffers.first} ? 'disabled'">
+          <a class="page-link" th:href="@{/view/offers/my-offers(page=${myOffers.number - 1})}">&laquo; Предишна</a>
+        </li>
+        <li class="page-item" th:each="i : ${#numbers.sequence(0, myOffers.totalPages - 1)}"
+            th:classappend="${myOffers.number == i} ? 'active'">
+          <a class="page-link" th:href="@{/view/offers/my-offers(page=${i})}" th:text="${i + 1}">1</a>
+        </li>
+        <li class="page-item" th:classappend="${myOffers.last} ? 'disabled'">
+          <a class="page-link" th:href="@{/view/offers/my-offers(page=${myOffers.number + 1})}">Следваща &raquo;</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

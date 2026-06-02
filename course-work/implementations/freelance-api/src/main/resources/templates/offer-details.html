@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Freelance Platform - Offer Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-success" th:href="@{/view/offers}">FreelancePlatform</a>
+        <div class="d-flex align-items-center">
+            <div th:if="${currentUsername == null}">
+                <a th:href="@{/view/login}" class="btn btn-outline-light me-2">Вход</a>
+                <a th:href="@{/view/register}" class="btn btn-primary">Регистрация</a>
+            </div>
+            <div th:if="${currentUsername != null}" class="d-flex align-items-center">
+                <a th:href="@{/view/profile}" class="btn btn-sm btn-outline-info me-3">Моят Профил</a>
+                <span class="text-white me-3">
+                    Добре дошъл, <strong class="text-info" th:text="${currentUsername}">Потребител</strong>!
+                </span>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger fw-bold">Изход</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="mb-3">
+                <a th:href="@{/view/offers}" class="btn btn-sm btn-secondary">&larr; Назад към всички обяви</a>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="text-primary fw-bold mb-0" th:text="${offer.title}">Заглавие на обявата</h2>
+                        <span class="badge bg-success fs-5" th:text="|${offer.price} лв.|">500 лв.</span>
+                    </div>
+                </div>
+
+                <div class="card-body py-4">
+                    <h5 class="fw-bold text-secondary">Описание на проекта</h5>
+                    <p class="card-text text-dark justify-content-between" style="white-space: pre-line;" th:text="${offer.description}">
+                        Тук ще се зареди пълното описание на проекта...
+                    </p>
+
+                    <hr class="my-4">
+
+                    <div class="row text-muted">
+                        <div class="col-sm-6">
+                            <p><strong>Публикувано от:</strong>
+                                <a th:href="@{/view/users/{username}(username=${offer.author.username})}"
+                                   class="text-success fw-bold text-decoration-none"
+                                   th:text="${offer.author.username}">Автор</a>
+                            </p>
+                            <p class="mb-0"><strong>Контакт (Email):</strong> <span th:text="${offer.author.email}">email@example.com</span></p>
+                        </div>
+                        <div class="col-sm-6 text-sm-end">
+                            <div th:if="${not #sets.isEmpty(offer.categories)}" class="mb-3">
+                                <strong>Категории:</strong>
+                                <span th:each="cat : ${offer.categories}" class="badge bg-secondary me-1" th:text="${cat.name}">Категория</span>
+                            </div>
+
+                            <div class="small">
+                                <span class="d-block">
+                                    ⏱️ <strong>Последна промяна:</strong>
+                                </span>
+                                <span class="text-dark fw-semibold"
+                                      th:text="${offer.updatedAt != null} ? ${#temporals.format(offer.updatedAt, 'dd MMMM yyyy г. в HH:mm', #locale)} : (${offer.createdAt != null} ? ${#temporals.format(offer.createdAt, 'dd MMMM yyyy г. в HH:mm', #locale)} : 'Няма данни')">
+                                    01 Януари 2026 г.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light p-3 d-flex justify-content-end" th:if="${currentUsername != null && currentUsername == offer.author.username}">
+
+                    <a th:href="@{/view/offers/edit/{id}(id=${offer.id})}" class="btn btn-warning me-2 fw-bold">
+                        ✏️ Редактирай обявата
+                    </a>
+
+                    <form th:action="@{/view/offers/delete/{id}(id=${offer.id})}" method="post"
+                          onsubmit="return confirm('Сигурни ли сте, че хотите да изтриете тази обява завинаги?');">
+                        <button type="submit" class="btn btn-danger fw-bold">
+                            🗑️ Изтрий обявата
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

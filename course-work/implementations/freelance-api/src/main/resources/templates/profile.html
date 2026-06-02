@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Freelance Platform - Моят Профил</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-success" th:href="@{/view/offers}">FreelancePlatform</a>
+    <div class="d-flex align-items-center">
+      <a th:href="@{/view/offers}" class="btn btn-sm btn-outline-light me-3">Към обявите</a>
+      <form th:action="@{/logout}" method="post" class="d-inline">
+        <button type="submit" class="btn btn-sm btn-danger fw-bold">Изход</button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+
+      <div th:if="${param.success}" class="alert alert-success alert-dismissible fade show text-center shadow-sm" role="alert">
+        Профилът беше обновен успешно!
+      </div>
+      <div th:if="${errorMessage}" class="alert alert-danger text-center shadow-sm" th:text="${errorMessage}">
+        Грешка при обновяването на данните!
+      </div>
+
+      <div class="row g-4">
+
+        <div class="col-md-5">
+          <div class="card shadow-sm border-0 h-100">
+            <div class="card-body text-center py-4">
+              <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-3"
+                   style="width: 80px; height: 80px; font-size: 32px; font-weight: bold;"
+                   th:text="${#strings.substring(user.username,0,1).toUpperCase()}">
+                U
+              </div>
+
+              <h4 class="fw-bold text-dark mb-1" th:text="${user.username}">username</h4>
+              <p class="text-muted small mb-3" th:text="${user.email}">user@example.com</p>
+
+              <hr>
+
+              <div class="mb-3">
+                <span class="d-block text-muted small fw-bold mb-1">Системна роля:</span>
+                <span th:each="role : ${user.roles}"
+                      class="badge bg-info text-dark px-2 py-1 me-1 fw-bold"
+                      th:text="${role.name.replace('ROLE_', '')}">USER</span>
+              </div>
+
+              <hr>
+
+              <div class="mb-3 text-start px-2">
+                <span class="d-block text-muted small fw-bold mb-1 text-center">За мен / Биография:</span>
+                <p class="text-muted small bg-light p-2 rounded border" style="min-height: 60px; word-break: break-word;"
+                   th:text="${user.biography != null && !user.biography.isEmpty()} ? ${user.biography} : 'Все още нямате добавена биография. Напишете нещо за себе си от менюто вдясно!'"></p>
+              </div>
+
+              <hr>
+
+              <div class="mt-4 pt-2">
+                <p class="text-muted small">Искате да закриете профила си?</p>
+                <form th:action="@{/view/profile/delete}" method="post"
+                      onsubmit="return confirm('ВНИМАНИЕ! Сигурни ли сте, че искате да изтриете профила си завинаги? Това действие е необратимо и ще изтрие всички ваши обяви!');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger w-100 fw-bold">
+                    🗑️ Изтрий моя акаунт
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-7">
+          <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-0">
+              <h5 class="mb-0 fw-bold text-primary">⚙️ Настройки на профила</h5>
+            </div>
+            <div class="card-body">
+
+              <form th:action="@{/view/profile/update}" th:object="${userUpdateDto}" method="post">
+
+                <p class="text-muted small mb-4">Попълнете само полетата, които желаете да промените. Останалите оставете празни.</p>
+
+                <div class="mb-3">
+                  <label for="email" class="form-label fw-bold">Нов имейл адрес</label>
+                  <input type="email" id="email" th:field="*{email}" class="form-control"
+                         th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                         th:placeholder="${user.email}">
+                  <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
+                    Невалиден имейл формат
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="password" class="form-label fw-bold">Нова парола</label>
+                  <input type="password" id="password" th:field="*{password}" class="form-control"
+                         th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                         placeholder="Въведете нова парола (мин. 8 символа)">
+                  <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">
+                    Паролата трябва да е поне 8 символа
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="biography" class="form-label fw-bold">Редактирай биографията си</label>
+                  <textarea id="biography" th:field="*{biography}" class="form-control" rows="4"
+                            th:classappend="${#fields.hasErrors('biography')} ? 'is-invalid'"
+                            placeholder="Разкажете накратко за вашите умения, технологии и професионален опит..."></textarea>
+                  <div class="invalid-feedback" th:if="${#fields.hasErrors('biography')}" th:errors="*{biography}">
+                    Биографията не може да бъде над 1000 символа.
+                  </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                  <button type="submit" class="btn btn-primary fw-bold py-2">
+                    Запази промените
+                  </button>
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+        </div>
+
+      </div> </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
